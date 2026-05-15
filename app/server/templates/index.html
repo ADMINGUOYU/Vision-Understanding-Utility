@@ -22,7 +22,10 @@
 
             <div class="row">
                 <label for="image_file">Upload image</label>
-                <input id="image_file" name="image_file" type="file" accept="image/*">
+                <div class="file-row">
+                    <input id="image_file" name="image_file" type="file" accept="image/*">
+                    <button id="clear-upload" type="button" class="secondary">Clear upload</button>
+                </div>
             </div>
 
             <div class="row checkbox-row">
@@ -58,6 +61,8 @@
     <script>
         const form = document.getElementById("task-form");
         const sampleInput = document.getElementById("sample_name");
+        const fileInput = document.getElementById("image_file");
+        const clearUploadButton = document.getElementById("clear-upload");
         const statusNode = document.getElementById("status");
         const outputNode = document.getElementById("output");
         const intermediateNode = document.getElementById("intermediate");
@@ -74,6 +79,21 @@
             button.classList.add("active");
             sampleInput.value = button.dataset.sample;
             statusNode.textContent = `Selected sample: ${button.dataset.sample}`;
+        });
+
+        fileInput.addEventListener("change", () => {
+            if (fileInput.files && fileInput.files.length > 0) {
+                sampleInput.value = "";
+                for (const item of gallery.querySelectorAll(".sample-item")) {
+                    item.classList.remove("active");
+                }
+                statusNode.textContent = `Selected upload: ${fileInput.files[0].name}`;
+            }
+        });
+
+        clearUploadButton.addEventListener("click", () => {
+            fileInput.value = "";
+            statusNode.textContent = "Upload cleared. You can select a sample image.";
         });
 
         async function pollTask(jobId) {

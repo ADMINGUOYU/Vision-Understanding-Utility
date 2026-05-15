@@ -3,10 +3,15 @@
 set -euo pipefail
 
 # ---------------- Configuration ----------------
+# Model paths
 MODEL_PATH="data/Qwen/Qwen3-VL-8B-Instruct"
 SECONDARY_MODEL_PATH="$MODEL_PATH"
+# Device to use
 DEVICE_MAP="cuda:0"
+# Web server port
 WEB_PORT="6841"
+# How MANY completed jobs to keep
+COMPLETED_JOB_RETENTION="5"
 
 TORCH_DTYPE="${TORCH_DTYPE:-auto}"
 WEB_HOST="${WEB_HOST:-0.0.0.0}"

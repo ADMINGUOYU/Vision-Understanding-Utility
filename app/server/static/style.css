@@ -36,6 +36,16 @@ body {
     justify-content: space-between;
 }
 
+.file-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.file-row input[type="file"] {
+    flex: 1;
+}
+
 button {
     border: 1px solid #1f6feb;
     border-radius: 8px;
@@ -43,6 +53,11 @@ button {
     color: #fff;
     padding: 8px 12px;
     cursor: pointer;
+}
+
+button.secondary {
+    border-color: #6b7280;
+    background: #6b7280;
 }
 
 .gallery {

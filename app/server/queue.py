@@ -30,11 +30,18 @@ class QueueJob:
 
 
 class TaskQueue:
-    def __init__(self, task_registry: TaskRegistry, runtimes: RuntimeRegistry) -> None:
+    def __init__(
+        self,
+        task_registry: TaskRegistry,
+        runtimes: RuntimeRegistry,
+        completed_job_retention: int = 200,
+    ) -> None:
         self.task_registry = task_registry
         self.runtimes = runtimes
+        self.completed_job_retention = max(0, completed_job_retention)
         self._pending: Queue[str] = Queue()
         self._jobs: dict[str, QueueJob] = {}
+        self._finished_order: list[str] = []
         self._lock = Lock()
         self._worker = Thread(target = self._worker_loop, daemon = True)
         self._worker.start()
@@ -87,6 +94,14 @@ class TaskQueue:
             for key, value in changes.items():
                 setattr(job, key, value)
             job.updated_at = datetime.now(timezone.utc).isoformat()
+            if "status" in changes and changes["status"] in {"completed", "failed"}:
+                self._finished_order.append(job_id)
+                self._clear_completed_locked()
+
+    def _clear_completed_locked(self) -> None:
+        while len(self._finished_order) > self.completed_job_retention:
+            old_job_id = self._finished_order.pop(0)
+            self._jobs.pop(old_job_id, None)
 
     def _worker_loop(self) -> None:
         while True:

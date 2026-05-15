@@ -16,6 +16,7 @@ class ServerConfig:
     web_host: str
     web_port: int
     max_new_tokens: int
+    completed_job_retention: int
 
     @classmethod
     def from_env(cls) -> "ServerConfig":
@@ -45,4 +46,5 @@ class ServerConfig:
             web_host = os.getenv("WEB_HOST", "0.0.0.0"),
             web_port = int(os.getenv("WEB_PORT", "6480")),
             max_new_tokens = int(os.getenv("MAX_NEW_TOKENS", "256")),
+            completed_job_retention = int(os.getenv("COMPLETED_JOB_RETENTION", "200")),
         )

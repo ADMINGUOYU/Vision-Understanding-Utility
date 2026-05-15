@@ -51,7 +51,11 @@ def create_app(config: ServerConfig | None = None) -> Flask:
     app_config = config or ServerConfig.from_env()
     runtimes = RuntimeRegistry.from_config(app_config)
     task_registry = build_default_task_registry()
-    task_queue = TaskQueue(task_registry = task_registry, runtimes = runtimes)
+    task_queue = TaskQueue(
+        task_registry = task_registry,
+        runtimes = runtimes,
+        completed_job_retention = app_config.completed_job_retention,
+    )
 
     app = Flask(
         __name__,
