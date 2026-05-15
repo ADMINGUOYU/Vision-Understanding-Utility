@@ -9,7 +9,7 @@ SECONDARY_MODEL_PATH="$MODEL_PATH"
 # Device to use
 DEVICE_MAP="cuda:0"
 # Web server port
-WEB_PORT="6841"
+WEB_PORT="6480"
 # How MANY completed jobs to keep
 COMPLETED_JOB_RETENTION="5"
 
