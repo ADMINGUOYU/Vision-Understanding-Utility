@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vision Utility</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename = 'style.css') }}">
+</head>
+<body>
+    <main class="container">
+        <h1>Vision Utility</h1>
+
+        <form id="task-form" class="panel">
+            <div class="row">
+                <label for="task_name">Task</label>
+                <select id="task_name" name="task_name" required>
+                    {% for task in tasks %}
+                    <option value="{{ task }}">{{ task }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="row">
+                <label for="image_file">Upload image</label>
+                <input id="image_file" name="image_file" type="file" accept="image/*">
+            </div>
+
+            <div class="row checkbox-row">
+                <label for="show_intermediate">Return intermediate wrapper outputs</label>
+                <input id="show_intermediate" name="show_intermediate" type="checkbox" checked>
+            </div>
+
+            <input id="sample_name" name="sample_name" type="hidden">
+
+            <button type="submit">Submit</button>
+        </form>
+
+        <section class="panel">
+            <h2>Sample Gallery</h2>
+            <div class="gallery" id="gallery">
+                {% for sample in samples %}
+                <button type="button" class="sample-item" data-sample="{{ sample }}">
+                    <img src="{{ url_for('sample_image', file_name = sample) }}" alt="{{ sample }}">
+                    <span>{{ sample }}</span>
+                </button>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="panel">
+            <h2>Result</h2>
+            <p id="status">Idle</p>
+            <pre id="output"></pre>
+            <pre id="intermediate"></pre>
+        </section>
+    </main>
+
+    <script>
+        const form = document.getElementById("task-form");
+        const sampleInput = document.getElementById("sample_name");
+        const statusNode = document.getElementById("status");
+        const outputNode = document.getElementById("output");
+        const intermediateNode = document.getElementById("intermediate");
+        const gallery = document.getElementById("gallery");
+
+        gallery.addEventListener("click", (event) => {
+            const button = event.target.closest(".sample-item");
+            if (!button) {
+                return;
+            }
+            for (const item of gallery.querySelectorAll(".sample-item")) {
+                item.classList.remove("active");
+            }
+            button.classList.add("active");
+            sampleInput.value = button.dataset.sample;
+            statusNode.textContent = `Selected sample: ${button.dataset.sample}`;
+        });
+
+        async function pollTask(jobId) {
+            while (true) {
+                const response = await fetch(`/api/task/${jobId}`);
+                const payload = await response.json();
+
+                if (!response.ok) {
+                    statusNode.textContent = payload.error || "Failed to load status.";
+                    return;
+                }
+
+                statusNode.textContent = `Task status: ${payload.status}`;
+                if (payload.status === "completed") {
+                    outputNode.textContent = payload.result.output || "";
+                    intermediateNode.textContent = JSON.stringify(payload.result.wrappers, null, 2);
+                    return;
+                }
+                if (payload.status === "failed") {
+                    outputNode.textContent = payload.error || "Task failed.";
+                    intermediateNode.textContent = "";
+                    return;
+                }
+
+                await new Promise((resolve) => setTimeout(resolve, 1000));
+            }
+        }
+
+        form.addEventListener("submit", async (event) => {
+            event.preventDefault();
+            outputNode.textContent = "";
+            intermediateNode.textContent = "";
+            statusNode.textContent = "Submitting task...";
+
+            const formData = new FormData(form);
+            const response = await fetch("/api/submit", {
+                method: "POST",
+                body: formData,
+            });
+            const payload = await response.json();
+
+            if (!response.ok) {
+                statusNode.textContent = payload.error || "Submit failed.";
+                return;
+            }
+
+            statusNode.textContent = `Queued with job id: ${payload.job_id}`;
+            await pollTask(payload.job_id);
+        });
+    </script>
+</body>
+</html>
