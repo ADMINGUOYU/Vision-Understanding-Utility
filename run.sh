@@ -6,8 +6,9 @@ set -euo pipefail
 # Model paths
 MODEL_PATH="data/Qwen/Qwen3-VL-8B-Instruct"
 SECONDARY_MODEL_PATH="$MODEL_PATH"
-# Device to use
-DEVICE_MAP="cuda:0"
+# Device to use (Set CUDA_VISIBLE_DEVICES to specify which GPU(s) to use)
+CUDA_VISIBLE_DEVICES="0"
+DEVICE_MAP="auto"
 # Web server port
 WEB_PORT="6480"
 # How MANY completed jobs to keep
@@ -15,7 +16,6 @@ COMPLETED_JOB_RETENTION="5"
 
 TORCH_DTYPE="${TORCH_DTYPE:-auto}"
 WEB_HOST="${WEB_HOST:-0.0.0.0}"
-CUDA_VISIBLE_DEVICES=${DEVICE_MAP#cuda:}
 MAX_NEW_TOKENS="${MAX_NEW_TOKENS:-256}"
 # ------------- Configuration ENDs --------------
 
